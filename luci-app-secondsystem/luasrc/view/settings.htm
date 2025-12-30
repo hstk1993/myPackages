@@ -1,0 +1,188 @@
+<div>
+  <div class="system-card">
+    <p class="guide-text">
+      物理切换方法： 断电后按住 <span class="key-label">WPS键</span> 或
+      <span class="key-label">Reset</span> 接电，待灯亮后松开。
+    </p>
+
+    <div class="control-box">
+      <button
+        id="btn-switch"
+        class="btn btn-primary"
+        onclick="doAction('switch')"
+      >
+        切换到官方系统
+      </button>
+      <button
+        id="btn-reboot"
+        class="btn btn-secondary"
+        onclick="doAction('reboot')"
+      >
+        重启当前系统
+      </button>
+    </div>
+
+    <div id="msg-area" class="msg-area hidden">
+      <span class="loading-icon"></span>
+      <span id="msg-text">正在执行...</span>
+      <span id="timer-box">请等待 <b id="timer">30</b>s</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* 卡片基础样式 */
+  .system-card {
+    background: #fdfdfd;
+    padding: 30px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: center;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 20px;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+    border: 1px solid #c8e6c9;
+  }
+
+  .guide-text {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 25px;
+  }
+  .key-label {
+    background: #eee;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    color: #333;
+    font-weight: bold;
+  }
+
+  /* 按钮样式优化 */
+  .control-box {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  .btn {
+    flex: 1;
+    max-width: 200px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .btn-primary {
+    background: #ff9900;
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: #e68a00;
+  }
+  .btn-secondary {
+    background: #607d8b;
+    color: #fff;
+  }
+  .btn-secondary:hover {
+    background: #455a64;
+  }
+
+  /* 禁用状态 */
+  .btn:disabled {
+    background: #ccc !important;
+    color: #888 !important;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* 消息区域样式 */
+  .msg-area {
+    margin-top: 25px;
+    padding: 15px;
+    background: #fff9e6;
+    border: 1px dashed #ffcc00;
+    border-radius: 5px;
+    color: #856404;
+  }
+  .hidden {
+    display: none !important;
+  }
+
+  /* 小转圈动画 */
+  .loading-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #ffcc00;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<script>
+  function doAction(type) {
+    var msg =
+      type === "switch" ? "确定要切换系统并重启吗？" : "确定要重启系统吗？";
+    if (!confirm(msg)) return;
+
+    // 获取按钮和消息区域
+    var btnSwitch = document.getElementById("btn-switch");
+    var btnReboot = document.getElementById("btn-reboot");
+    var msgArea = document.getElementById("msg-area");
+    var msgText = document.getElementById("msg-text");
+    var timerSpan = document.getElementById("timer");
+
+    // 1. 禁用按钮，防止多次点击
+    btnSwitch.disabled = true;
+    btnReboot.disabled = true;
+
+    // 2. 显示下方提示文字
+    msgArea.classList.remove("hidden");
+    msgText.innerText =
+      type === "switch" ? "系统切换指令已发出..." : "正在准备重启...";
+
+    // 3. 发送请求
+    var url =
+      '<%=luci.dispatcher.build_url("admin/system/second_system")%>/act_' +
+      type +
+      "?needReboot=yes";
+
+    fetch(url)
+      .then((res) => {
+        // 开始倒计时
+        var seconds = 30;
+        var interval = setInterval(function () {
+          seconds--;
+          timerSpan.innerText = seconds;
+          if (seconds <= 0) {
+            clearInterval(interval);
+            window.location.href = "http://192.168.66.1/";
+          }
+        }, 1000);
+      })
+      .catch((err) => {
+        location.reload();
+      });
+  }
+</script>
