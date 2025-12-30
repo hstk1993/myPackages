@@ -5,9 +5,9 @@ local http = require "luci.http"
 local disp = require "luci.dispatcher"
 
 function index()
-    entry({"admin", "system", "second_system"}, view("admin", "system", "second_system", "settings"),
+    entry({"admin", "system", "second_system"}, alias("admin", "system", "second_system", "settings"),
         _("官方系统"), 50).dependent = true
-    entry({"admin", "system", "second_system", "settings"}, template("settings"), _("Settings"), 10).leaf = true
+    entry({"admin", "system", "second_system", "settings"}, template("settings"), _("切换系统"), 10).leaf = true
     entry({"admin", "system", "second_system", "act_switch"}, call("action_switch"), nil)
     entry({"admin", "system", "second_system", "act_reboot"}, call("action_reboots"), nil)
 end 
