@@ -9,7 +9,6 @@ LUCI_TITLE:=Luci Secondsystem Support for Nradio660
 LUCI_PKGARCH:=all
 PKG_VERSION:=1.0.0
 LUCI_DEPENDS:=+luci
-		
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
