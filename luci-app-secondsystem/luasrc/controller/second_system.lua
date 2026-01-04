@@ -17,7 +17,6 @@ function action_switch()
 
     if needReboot and needReboot == "yes" then
         sys.call("/usr/bin/reboot_default_sys.sh")
-        sys.call("reboot")
     else
         http.redirect(disp.build_url("admin", "system", "second_system", "settings"))
     end
