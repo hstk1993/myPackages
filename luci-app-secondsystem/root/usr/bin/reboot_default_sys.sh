@@ -1,46 +1,53 @@
 #!/bin/bash
-#This program is the first system to switch to the device 660, by Manper 20240307
+# Program: 动态获取分区并切换系统
+# Update: 2026-01-04
+
 TARGET_DIR="/mnt/app_data"
-DEVICE="ubi1_0"
-if [ ! -d "$TARGET_DIR" ]; then
-    echo "The target directory does not exist, creating $TARGET_DIR ..."
-    mkdir "$TARGET_DIR"
-    if [ $? -ne 0 ]; then
-        echo "Failed to create directory, exiting script..."
-        exit 1
-    fi
-else
-    echo "The target directory already exists, skipping the creation step..."
+DEVICE_NAME="ubi1_0"
+PART_NAME="app_data"  # <--- 请根据 cat /proc/mtd 里的名称修改此处
+UBI_CTRL="/dev/ubi_ctrl"
+BOOT_2ND_FLAG_FILE="${TARGET_DIR}/boot_2nd_flag"
+
+# --- 1. 动态获取 MTD 编号 ---
+# 通过匹配名称获取对应的 mtdX (例如 mtd7 -> 7)
+MTD_NUM=$(grep -w "$PART_NAME" /proc/mtd | cut -d: -f1 | sed 's/mtd//')
+
+if [ -z "$MTD_NUM" ]; then
+    echo "错误: 未能在 /proc/mtd 中找到名为 '$PART_NAME' 的分区。"
+    exit 5
 fi
-if mount | grep "on $TARGET_DIR " > /dev/null; then
-    echo "$TARGET_DIR created，skipping step..."
+
+echo "确认分区 '$PART_NAME' 对应的编号为: MTD $MTD_NUM"
+
+# --- 2. 确保挂载点存在 ---
+[ ! -d "$TARGET_DIR" ] && mkdir -p "$TARGET_DIR"
+
+# --- 3. 挂载逻辑 ---
+if mountpoint -q "$TARGET_DIR"; then
+    echo "设备已挂载."
 else
-    echo "try to create $DEVICE to $TARGET_DIR ..."
-    ubiattach -m 7 /dev/ubi_ctrl
-    mount -t ubifs "$DEVICE" "$TARGET_DIR"
+    # 检查是否已经关联过 ubi (防止重复关联导致提示 Device or resource busy)
+    if [ ! -e "/dev/ubi1" ]; then
+        echo "正在关联 MTD $MTD_NUM 到 UBI..."
+        ubiattach -m "$MTD_NUM" "$UBI_CTRL" 2>/dev/null
+    fi
+
+    echo "正在挂载 $DEVICE_NAME 到 $TARGET_DIR ..."
+    mount -t ubifs "$DEVICE_NAME" "$TARGET_DIR"
     if [ $? -ne 0 ]; then
-        echo "create err，exiting..."
+        echo "挂载失败，尝试检查驱动或设备状态。"
         exit 2
-    else
-        echo "complete."
     fi
 fi
-sleep 1
-BOOT_2ND_FLAG_FILE="/mnt/app_data/boot_2nd_flag"
+
+# --- 4. 标志文件处理 ---
 if [ -f "$BOOT_2ND_FLAG_FILE" ]; then
-    echo "Refactoring $BOOT_2ND_FLAG_FILE ..."
-    rm "$BOOT_2ND_FLAG_FILE"
-    if [ $? -ne 0 ]; then
-        echo "Refactoring file failed，exiting..."
-        exit 3
-    else
-        echo "Refactoring completed."
-    fi
+    echo "正在清理切换标志..."
+    rm -f "$BOOT_2ND_FLAG_FILE" && sync
+    echo "切换成功！系统正在重启..."
+    sleep 2
+    reboot
 else
-    echo "文件 $BOOT_2ND_FLAG_FILE 不存在，跳过重构步骤."
-    echo "切换到官方系统失败！退出..."
+    echo "错误：未发现标志文件 $BOOT_2ND_FLAG_FILE，切换中断。"
     exit 4
 fi
-echo "切换到官方系统成功！正在重启..."
-reboot
-exit 0
