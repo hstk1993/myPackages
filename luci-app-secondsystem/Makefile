@@ -33,4 +33,4 @@ define Package/luci-app-secondsystem/install
 	$(INSTALL_BIN) ./root/usr/bin/reboot_default_sys.sh $(1)/usr/bin/
 endef
 
-$(eval $(call BuildPackage,luci-app-secondsystem))
+$(eval $(call BuildPackage,$(PKG_NAME)))
