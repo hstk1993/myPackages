@@ -6,7 +6,7 @@ PKG_RELEASE:=20260104
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/luci-app-secondsystem
+define Package/$(PKG_NAME)
   SECTION:=luci
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
@@ -25,12 +25,12 @@ define Package/luci-app-secondsystem/install
 
 	# 2. 安装界面 (View)
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view
-	$(INSTALL_DATA) ./luasrc/view//settings.htm $(1)/usr/lib/lua/luci/view/settings.htm
+	$(INSTALL_DATA) ./luasrc/view/settings.htm $(1)/usr/lib/lua/luci/view/settings.htm
 
 	# 3. 安装核心切换脚本 (至系统 PATH 路径)
 	# 使用 INSTALL_BIN 会自动赋予 0755 权限，解决 sys.call 无法执行的问题
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) ./root/usr/bin/reboot_default_sys.sh $(1)/usr/bin/reboot_default_sys.sh
+	$(INSTALL_BIN) ./root/usr/bin/reboot_default_sys.sh $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,luci-app-secondsystem))
