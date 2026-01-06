@@ -13,6 +13,7 @@ LUCI_DEPENDS:=+luci
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
+<<<<<<< HEAD
 define Package/$(PKG_NAME)
   SECTION:=luci
   CATEGORY:=LuCI
@@ -41,3 +42,6 @@ define Package/luci-app-secondsystem/install
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))
+=======
+# call BuildPackage - OpenWrt buildroot signature
+>>>>>>> parent of da5a529 (dd)
