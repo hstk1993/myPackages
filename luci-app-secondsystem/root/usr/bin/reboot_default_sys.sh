@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 #!/bin/sh
 # Program: 系统切换 (2026 稳定版)
 # Fix: 使用 /proc/mounts 替代不存在的 mountpoint 命令
 export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
-=======
-#!/bin/bash
-# Program: 动态获取分区并切换系统
-# Update: 2026-01-04
->>>>>>> parent of da5a529 (dd)
 
 TARGET_DIR="/mnt/app_data"
 DEVICE_NAME="ubi1_0"
